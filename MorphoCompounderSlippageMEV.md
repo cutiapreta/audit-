@@ -1039,6 +1039,7 @@ function _swapFrom(
 - Base4626Compounder `_harvestAndReport`:
 
 1): `_claimAndSellRewards()`: where the swap above is executed with `minOut = 0`
+
 2): `_totalAssets = balanceOfAsset() + valueOfVault()` : this is the “truth” that gets reported to `TokenizedStrategy`
 
 `BaseHealthCheck` harvest wrapper:
@@ -1080,15 +1081,19 @@ so the attack that only skims a certain percentage of the profit is
 ## attack:
 
 **1): strategy:** MorphoCompounder 
+
 **2) Reward selling:**
    - `_harvestAndReport()` -> `_claimAndSellRewards()` ->  `_swapFrom(reward, asset, balance, 0)`
    - no slippage bound (`amountOutMinimum = 0`)
+     
 **3) swapper:**
    - `UniswapV3Swapper._swapFrom` forwards `_minAmountOut` -> Uniswap V3’s `amountOutMinimum`
    - only dust threshold is `minAmountToSell`, not price protection
+
 **4) HealthCheck:**
    - `BaseHealthCheck.harvestAndReport()` wraps `_harvestAndReport()` and checks only net profit/loss vs last `totalAssets`
    - with defaults, any net profit is accepted even if much smaller than fair profit
+
 **5) attack:**
 - watch mempool for `report()` calls
 - front‑run: trade R->asset heavily to push price down for R
